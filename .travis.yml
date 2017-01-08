@@ -14,21 +14,27 @@ sudo: false
 # Do not choose a language; we provide our own build tools.
 language: generic
 
+branches:
+    only:
+        -master
+
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.stack
+      - $HOME/.stack
 
 before_install:
-# Download and unpack the stack executable
-- mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH
-- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    - mkdir -p ~/.local/bin
+    - export PATH=$HOME/.local/bin:$PATH
+    - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    - chmod a+x $HOME/.local/bin/stack
 
 install:
-# Build dependencies
-- stack --no-terminal --install-ghc test --only-dependencies
+    - stack +RTS -N2 -RTS setup
+    - stack +RTS -N2 -RTS build --only-snapshot
 
 script:
-# Build the package, its tests, and its docs and run the tests
-- stack --no-terminal test
+    - git --version
+    - stack --version
+    - stack +RTS -N2 -RTS build --test --haddock --no-haddock-deps
+
